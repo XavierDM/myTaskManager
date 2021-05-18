@@ -2,8 +2,43 @@ const readline = require('readline').createInterface({
     input: process.stdin,
     output: process.stdout
 });
-let tasks = ["Make bread", "make cake"];
-let completedTasks = [];
+
+
+const fs = require('fs')
+const filePath = 'tasks.json'
+const loadTasks = () => {
+    try {
+        const file = fs.readFileSync(filePath, 'utf-8')
+        return JSON.parse(file)
+    } catch (err) {
+        return false
+    }
+}
+
+let tasks = loadTasks();
+if (!tasks) tasks = [];
+
+const completed = 'complTasks.json'
+const loadcomplTasks = () => {
+    try {
+        const file1 = fs.readFileSync(completed, 'utf-8')
+        return JSON.parse(file1)
+    } catch (err) {
+        return false
+    }
+}
+
+
+let completedTasks = loadcomplTasks();
+if (!completedTasks) completedTasks = [];
+
+const storeTasks = (tasks, filePath) => {
+    try {
+        fs.writeFileSync(filePath, JSON.stringify(tasks))
+    } catch (err) {
+        console.log(err)
+    }
+}
 
 console.log(tasks)
 const manager = () => {
@@ -29,16 +64,15 @@ const manager = () => {
             })
         } else if (choice === "3") {
             console.log(`The current tasks are ${tasks}`)
-            readline.question("Please enter the task you wish to remove", delTask => {
+            readline.question("Please enter the task you wish to remove ", delTask => {
                 let index = tasks.indexOf(delTask)
-                tasks.splice(index)
+                tasks.splice(index, 1)
                 console.log(`${delTask}  will be removed from the tasks`)
                 manager()
             })
         } else if (choice === "4") {
             console.log(`The current tasks are ${tasks}`)
             readline.question("Please enter the task you wish to mark as completed ", compTask => {
-                /*if value is already completed => don't show*/
                 let index1 = tasks.indexOf(`${compTask}`)
                 completedTasks.push(`${compTask}[X]`)
                 tasks.splice(index1, 1)
@@ -50,10 +84,12 @@ const manager = () => {
                 } else {
                     console.log(`There are currently no completed tasks`)
                 }
+                storeTasks(completedTasks, completed)
                 manager()
             })
         } else if (choice === "5") {
             console.log("Thank you for consulting the task manager!")
+            storeTasks(tasks, filePath)
             readline.close()
         }
     })
